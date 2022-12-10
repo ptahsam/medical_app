@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/config/palette.dart';
+import 'package:medical_app/sharedWidgets/personal_details.dart';
+import 'package:page_transition/page_transition.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({Key? key}) : super(key: key);
@@ -57,7 +59,7 @@ class _UserProfileState extends State<UserProfile> {
             ],
           ),
           SliverPadding(
-            padding: EdgeInsets.only(top: 40, left: 12.0, right: 12.0,),
+            padding: EdgeInsets.only(top: 20.0, left: 12.0, right: 12.0,),
             sliver: SliverToBoxAdapter(
               child: ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -191,9 +193,14 @@ class _UserProfileState extends State<UserProfile> {
                         color: Colors.black
                       ),
                     ),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 28.0,
+                    trailing: InkWell(
+                      onTap: (){
+                        Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: PersonalDetails()));
+                      },
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 28.0,
+                      ),
                     ),
                   ),
                   SizedBox(height: 20.0,),
@@ -322,7 +329,7 @@ class _UserProfileState extends State<UserProfile> {
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 10.0),
+            padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 10.0, bottom: 20.0),
             sliver: SliverToBoxAdapter(
               child: Text(
                 "Log Out",
