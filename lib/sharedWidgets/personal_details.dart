@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/Models/apiConstants.dart';
 import 'package:medical_app/Models/user.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +17,7 @@ class PersonalDetails extends StatefulWidget {
 class _PersonalDetailsState extends State<PersonalDetails> {
 
   bool isEdit = false;
+  bool canUpdate = false;
   List<String> gender = ["Male", "Female"];
   String selectedGender = "Male";
 
@@ -32,6 +34,20 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     // TODO: implement initState
     super.initState();
   }
+
+  void textFieldChange(String value){
+    if(value.isNotEmpty){
+      setState(() {
+        canUpdate = true;
+      });
+    }else{
+      setState(() {
+        canUpdate = false;
+      });
+    }
+  }
+
+
 
   void setUserDetails(User user){
     fullnameEditingController.text = user.fullname!;
@@ -58,7 +74,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 Navigator.of(context).pop();
               },
               child: Icon(
-                Icons.arrow_back,
+                Icons.clear,
                 color: Colors.black,
               ),
             ),
@@ -71,11 +87,41 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               ),
             ),
             actions: [
-              Icon(
-                Icons.line_weight_sharp,
-                size: 28.0,
-                color: Colors.black,
-              ),
+              isEdit?Container(
+                margin: EdgeInsets.only(
+                  right: 12.0,
+                  top: 10.0,
+                  bottom: 10.0,
+                ),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Palette.primaryColor,
+                  ),
+                  onPressed: () async {
+                    String fullname = fullnameEditingController.text.isNotEmpty?fullnameEditingController.text:user.fullname!;
+                    String phonenumber = phoneEditingController.text.isNotEmpty?phoneEditingController.text:user.phonenumber!;
+                    String email = emailEditingController.text.isNotEmpty?emailEditingController.text:user.email!;
+                    String photo = user.photo!;
+                    String birthdate = birthdateEditingController.text.isNotEmpty?birthdateEditingController.text:user.birthdate!;
+                    String streetaddress = addressEditingController.text.isNotEmpty?addressEditingController.text:user.street_address!;
+                    String city = cityEditingController.text.isNotEmpty?cityEditingController.text:user.city!;
+                    String zipcode = zipcodeEditingController.text.isNotEmpty?zipcodeEditingController.text:user.zipcode!;
+
+                    var response = await AssistantMethods.updateUser(context, user.id.toString(), fullname, phonenumber, email, photo, birthdate, streetaddress, city, zipcode);
+
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(response),
+                    ));
+                  },
+                  child: Text(
+                    "Update",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ),
+              ):SizedBox.shrink(),
             ],
           ),
           SliverToBoxAdapter(

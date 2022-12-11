@@ -30,7 +30,7 @@ class CustomTabBar extends StatelessWidget {
           .map((i, e) => MapEntry(i, Tab(
         icon: Icon(e.icon, color: i == selectedIndex?Palette.mainColor:Colors.grey, size: 24.0,),
         iconMargin: EdgeInsets.only(bottom: 5.0),
-        child: Text(e.title!, style: TextStyle(color: i == selectedIndex?Palette.mainColor:Colors.grey, fontWeight: FontWeight.w400)),
+        child: Text(e.title!, style: TextStyle(color: i == selectedIndex?Palette.mainColor:Colors.grey, fontSize: 12.0, fontWeight: FontWeight.bold)),
       ))).values.toList(),
       onTap: onTap,
     );

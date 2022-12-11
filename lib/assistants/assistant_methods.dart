@@ -6,6 +6,29 @@ import 'package:provider/provider.dart';
 
 class AssistantMethods
 {
+  static Future<String> updateUser(context, String userid, String fullname, String phonenumber, String email, String photo, String birthdate, String streetaddress, String city, String zipcode) async {
+    String data = "";
+
+    var params = {
+      'updateUser': '1',
+      'userid': '${userid}',
+      'fullname': '${fullname}',
+      'phonenumber': '${phonenumber}',
+      'email': '${email}',
+      'photo': '${photo}',
+      'birthdate': '${birthdate}',
+      'streetaddress': '${streetaddress}',
+      'city': '${city}',
+      'zipcode': '${zipcode}',
+    };
+
+    var response = await RequestAssistant.getRequest(params);
+
+    data = response;
+
+    return data;
+  }
+
   static Future<String> loginUser(context, String identifier, String password) async{
     String data = "";
     var params = {

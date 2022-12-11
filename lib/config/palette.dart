@@ -4,6 +4,9 @@ class Palette
 {
   static const Color mainColor = Color(0xFF1c4966);
   static const Color greyLight = Color(0xFFf6f5f8);
+  static const Color greyLight1 = Color(0xFFf4f6fa);
+  static const Color greyText = Color(0xFF757575);
+  static const Color greyText1 = Color(0xFFdadbe0);
   static const Color blue1 = Color(0xFF3871ff);
   static const Color greyBorder = Color(0xFFDDDDDD);
   static const Color grey1 = Color(0xFFd8d9de);
