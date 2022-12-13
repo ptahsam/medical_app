@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/Models/tab_item.dart';
+import 'package:medical_app/Models/user.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:medical_app/screens/screens.dart';
 import 'package:medical_app/sharedWidgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class NavBarScreen extends StatefulWidget {
   static const String idScreen = "NavScreen";
@@ -49,6 +54,7 @@ class _NavBarScreenState extends State<NavBarScreen> {
     // TODO: implement initState
     super.initState();
     checkIsNavigate();
+    getData();
   }
 
   void checkIsNavigate(){
@@ -57,6 +63,33 @@ class _NavBarScreenState extends State<NavBarScreen> {
         _selectedIndex = widget.navigateIndex;
       });
     }
+  }
+
+  void getData(){
+    getUserData();
+    getWorkData();
+    getDoctors();
+  }
+
+  getUserData() async{
+    Future.delayed(Duration.zero,()
+    async {
+      AssistantMethods.getUserData(context, await getUserId());
+    });
+  }
+
+  getWorkData() async{
+    Future.delayed(Duration.zero,()
+    async {
+      AssistantMethods.getDoctorData(context, await getUserId());
+    });
+  }
+
+  getDoctors() async{
+    Future.delayed(Duration.zero,()
+    async {
+      AssistantMethods.getAllDoctors(context);
+    });
   }
 
   @override

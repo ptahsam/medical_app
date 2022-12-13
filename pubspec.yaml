@@ -44,6 +44,10 @@ dependencies:
   extended_image: ^6.3.1
   shared_preferences: ^2.0.15
   flutter_emoji: ^2.4.0
+  intl: ^0.17.0
+  flutter_holo_date_picker: ^1.1.0
+  calendar_date_picker2: ^0.3.5
+  time_range: ^1.1.0
 
 dev_dependencies:
   flutter_test:

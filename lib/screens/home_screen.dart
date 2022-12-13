@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:medical_app/DataHandler/appdata.dart';
+import 'package:medical_app/Models/doctor.dart';
 import 'package:medical_app/Models/user.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:medical_app/sharedWidgets/widgets.dart';
 import 'package:page_transition/page_transition.dart';
@@ -27,8 +29,19 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getData();
+  }
+
+  void getData(){
+  }
+
+  @override
   Widget build(BuildContext context) {
     User user = Provider.of<AppData>(context).user!;
+    List<Doctor> doctorsList = Provider.of<AppData>(context).doctorsList!=null?Provider.of<AppData>(context).doctorsList!:[];
     return Scaffold(
       backgroundColor: Colors.white70,
       body: CustomScrollView(
@@ -269,20 +282,21 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Container(
               padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 15.0),
-              child: GridView.count(
+              child: doctorsList.isNotEmpty?GridView.count(
                 padding: EdgeInsets.zero,
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
                 physics: NeverScrollableScrollPhysics(),
-                childAspectRatio: 0.95,
+                childAspectRatio: 0.85,
                 crossAxisSpacing: 10.0,
                 mainAxisSpacing: 2.0,
                 children: List.generate(
-                  8, (index) {
+                  doctorsList.length , (index) {
+                    Doctor doctor = doctorsList[index];
                     return InkWell(
                       onTap: (){
-                        Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: DoctorDetails()));
+                        Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: DoctorDetails(doctor: doctor,)));
                       },
                       child: Container(
                         margin: index.isEven?EdgeInsets.only(left: 5.0, bottom: 10.0):EdgeInsets.only(bottom: 10.0, right: 5.0),
@@ -301,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Center(
                               child: Container(
@@ -320,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 15.0,),
                             Text(
-                              'Dr Phil Molly',
+                              '${doctor.work!.title! + " " + doctor.user!.fullname!}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -331,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SizedBox(height: 5.0,),
                             Text(
-                              'Physician',
+                              '${doctor.work!.field!}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -374,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
-              ),
+              ):SizedBox.shrink(),
             ),
           ),
         ],

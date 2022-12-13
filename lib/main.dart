@@ -4,18 +4,51 @@ import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/authentication/authentication.dart';
 import 'package:medical_app/authentication/login_screen.dart';
 import 'package:medical_app/config/colorMap.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/screens/home_screen.dart';
 import 'package:medical_app/screens/screens.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
+
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String userid = "";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getUserData();
+    super.initState();
+  }
+
+  Future<void> getUserData() async {
+    userid = await getUserId();
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    getUserData();
+    super.didChangeDependencies();
+  }
+
+  @override
+  void didUpdateWidget(covariant MyApp oldWidget) {
+    // TODO: implement didUpdateWidget
+    getUserData();
+    super.didUpdateWidget(oldWidget);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -38,7 +71,7 @@ class MyApp extends StatelessWidget {
                 //displayColor: Colors.white, //<-- SEE HERE
               ),
             ),
-            home: Provider.of<AppData>(context).user != null?NavBarScreen():StartScreen(),
+            home: userid != ""?NavBarScreen():StartScreen(),
             debugShowCheckedModeBanner: false,
           );
         },

@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:medical_app/DataHandler/appdata.dart';
+import 'package:medical_app/Models/user.dart';
 import 'package:medical_app/assistants/assistant_methods.dart';
 import 'package:medical_app/authentication/authentication.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -173,7 +177,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text("You have logged in."),
                       ));
-                      Navigator.pop(context);
+                      User user = Provider.of<AppData>(context, listen: false).user!;
+                      saveUserId(user.id!.toString());
+                      Navigator.pop(context, "LOGGED_IN");
                     }else{
                       setState(() {
                         isLoggingIn = false;

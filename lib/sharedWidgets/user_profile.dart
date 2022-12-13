@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:medical_app/DataHandler/appdata.dart';
+import 'package:medical_app/Models/user.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:medical_app/sharedWidgets/personal_details.dart';
+import 'package:medical_app/sharedWidgets/widgets.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({Key? key}) : super(key: key);
@@ -26,6 +31,7 @@ class _UserProfileState extends State<UserProfile> {
 
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<AppData>(context).user!;
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -72,7 +78,7 @@ class _UserProfileState extends State<UserProfile> {
                   ),
                 ),
                 title: Text(
-                  "Peter Samuel",
+                  "${user.fullname!=""?user.fullname:"No username"}",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -82,7 +88,7 @@ class _UserProfileState extends State<UserProfile> {
                   ),
                 ),
                 subtitle: Text(
-                  "Joined on May",
+                  "Joined on ${convertToFullDate(int.parse(user.date_joined!))}",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -203,6 +209,42 @@ class _UserProfileState extends State<UserProfile> {
                       ),
                     ),
                   ),
+                  user.role != null && user.role == "2"?SizedBox(height: 20.0,):SizedBox.shrink(),
+                  user.role != null && user.role == "2"?ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      height: 60,
+                      width: 60,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Palette.mainColor
+                      ),
+                      child: Icon(
+                        FontAwesomeIcons.suitcaseMedical,
+                        size: 28.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                    title: Text(
+                      "Work profile",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                          color: Colors.black
+                      ),
+                    ),
+                    trailing: InkWell(
+                      onTap: (){
+                        Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: WorkProfile()));
+                      },
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 28.0,
+                      ),
+                    ),
+                  ):SizedBox.shrink(),
                   SizedBox(height: 20.0,),
                   ListTile(
                     contentPadding: EdgeInsets.zero,

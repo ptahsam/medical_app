@@ -1,9 +1,11 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/Models/apiConstants.dart';
 import 'package:medical_app/Models/user.dart';
 import 'package:medical_app/assistants/assistant_methods.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:provider/provider.dart';
 
@@ -468,6 +470,20 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   TextField(
                     controller: birthdateEditingController,
                     enabled: isEdit,
+                    onTap: () async {
+                      var datePicked = await DatePicker.showSimpleDatePicker(
+                        context,
+                        initialDate: DateTime(1994),
+                        firstDate: DateTime(1960),
+                        lastDate: DateTime(2012),
+                        dateFormat: "dd-MMMM-yyyy",
+                        locale: DateTimePickerLocale.en_us,
+                        looping: true,
+                      );
+                      if(datePicked != null){
+                        birthdateEditingController.text = convertToBirthDate(datePicked.millisecondsSinceEpoch);
+                      }
+                    },
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.w600,
@@ -480,11 +496,27 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         fontWeight: FontWeight.w600,
                         fontSize: 18.0,
                       ),
-                      suffixIcon: Icon(
-                        Icons.keyboard_arrow_down_outlined,
-                        size: 26.0,
-                        color: Palette.textColor,
-                      ),
+                      suffixIcon: isEdit?InkWell(
+                        onTap: () async {
+                          var datePicked = await DatePicker.showSimpleDatePicker(
+                            context,
+                            initialDate: DateTime(1994),
+                            firstDate: DateTime(1960),
+                            lastDate: DateTime(2012),
+                            dateFormat: "dd-MMMM-yyyy",
+                            locale: DateTimePickerLocale.en_us,
+                            looping: true,
+                          );
+                          if(datePicked != null){
+                            birthdateEditingController.text = convertToBirthDate(datePicked.millisecondsSinceEpoch);
+                          }
+                        },
+                        child: Icon(
+                          Icons.keyboard_arrow_down_outlined,
+                          size: 26.0,
+                          color: Palette.textColor,
+                        ),
+                      ):null,
                       contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
