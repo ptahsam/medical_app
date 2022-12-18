@@ -1,7 +1,11 @@
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
+import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/Models/doctor.dart';
+import 'package:medical_app/Models/user.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
 import 'package:medical_app/config/palette.dart';
+import 'package:provider/provider.dart';
 import 'package:time_range/time_range.dart';
 
 class BookAppointment extends StatefulWidget {
@@ -26,6 +30,7 @@ class _BookAppointmentState extends State<BookAppointment> {
     const TimeOfDay(hour: 15, minute: 00),
   );
   TimeRangeResult? _timeRange;
+  TextEditingController notesEditingController = TextEditingController();
 
   @override
   void initState() {
@@ -35,6 +40,7 @@ class _BookAppointmentState extends State<BookAppointment> {
 
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<AppData>(context).user!;
     return Scaffold(
       backgroundColor: Colors.grey[100]!,
       body: CustomScrollView(
@@ -195,6 +201,90 @@ class _BookAppointmentState extends State<BookAppointment> {
                 color: Colors.white,
               ),
               child: _buildTimeRange(),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              margin: EdgeInsets.only(top: 10.0, left: 12.0, right: 12.0),
+              padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Notes",
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.0
+                    ),
+                  ),
+                  SizedBox(height: 5.0,),
+                  TextField(
+                    controller: notesEditingController,
+                    minLines: 5,
+                    maxLines: 5,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "Add notes",
+                      hintStyle: TextStyle(
+                        color: Palette.textColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18.0,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              margin: EdgeInsets.only(top: 10.0, left: 12.0, right: 12.0, bottom: 40.0),
+              padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 12.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                color: Colors.grey[100]!,
+              ),
+              child: InkWell(
+                onTap: () async {
+                  var response =  await AssistantMethods.saveScheduleDetails(context, "", user.id!.toString(), widget.doctor.user!.id!.toString(), _singleDatePickerValueWithDefaultValue.first!.millisecondsSinceEpoch.toString(), _timeRange!.start.format(context), _timeRange!.end.format(context), "booked", notesEditingController.text);
+                  if(response == "SUCCESS"){
+                    Navigator.pop(context);
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(response),
+                  ));
+                  },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 15.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Palette.mainColor,
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Save Appointment",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],

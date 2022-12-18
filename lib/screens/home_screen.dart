@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    User user = Provider.of<AppData>(context).user!;
+    User user = Provider.of<AppData>(context).user!=null?Provider.of<AppData>(context).user!:User();
     List<Doctor> doctorsList = Provider.of<AppData>(context).doctorsList!=null?Provider.of<AppData>(context).doctorsList!:[];
     return Scaffold(
       backgroundColor: Colors.white70,
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
             leadingWidth: 0,
             centerTitle: false,
             title: Text(
-              user.fullname!,
+              '${user.fullname!=null?user.fullname!:""}',
               textAlign: TextAlign.start,
               style: TextStyle(
                 color: Colors.black,
@@ -375,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   SizedBox(width: 3.0,),
                                   Text(
-                                    "5.0",
+                                    "${doctor.rating!.toDouble()}",
                                     style: TextStyle(
                                       color: Palette.greyText,
                                     ),

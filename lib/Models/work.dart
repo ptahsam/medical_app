@@ -15,7 +15,7 @@ class Work
   factory Work.fromJson(Map<String, dynamic> json) {
 
     return Work(
-      id: json['id'],
+      id: json['did'],
       title: json['title'],
       field: json['field'],
       work_type: json['work_type'],

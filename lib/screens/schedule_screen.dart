@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:medical_app/DataHandler/appdata.dart';
+import 'package:medical_app/Models/doctor_booking.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart' show toBeginningOfSentenceCase;
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({Key? key}) : super(key: key);
@@ -14,11 +20,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<DoctorBooking> bookingList = Provider.of<AppData>(context).doctorBookingList!=null?Provider.of<AppData>(context).doctorBookingList!:[];
+    List<DoctorBooking> doctorBookingList = arrangeDoctorBooking(_active, bookingList);
+    updateCompletedBookings(doctorBookingList);
     return Scaffold(
       backgroundColor: Colors.white70,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            pinned: _active == 1?false:true,
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             leadingWidth: 0,
@@ -145,7 +155,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ),
           ),
           SliverToBoxAdapter(
-            child: Container(
+            child: _active == 1?Container(
               padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 20.0),
               child: Text(
                 "Nearest visit",
@@ -154,19 +164,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
+            ):SizedBox.shrink(),
           ),
           SliverToBoxAdapter(
-            child: Container(
+            child: _active == 1?Container(
               padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 10.0),
-              child: ScheduleCard(),
-            ),
+              child: doctorBookingList.isNotEmpty?ScheduleCard(active: _active, doctorBooking: doctorBookingList.first,):SizedBox(),
+            ):SizedBox.shrink(),
           ),
           SliverToBoxAdapter(
             child: Container(
               padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 20.0),
               child: Text(
-                "Future visits",
+                "${_active == 1 && doctorBookingList.length - 1 > 0?"Future visits":_active == 2?"Completed visits":_active == 3?"Cancelled visits":""}",
                 style: TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
@@ -176,26 +186,70 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
           SliverPadding(
             padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 10.0),
-            sliver: SliverAnimatedList(
-              initialItemCount: 5,
+            sliver: _active == 1?SliverAnimatedList(
+              initialItemCount: doctorBookingList.length - 1 > 0?doctorBookingList.length - 1:0,
               itemBuilder: (_, int index, animation){
+                DoctorBooking doctorBooking = doctorBookingList[index + 1];
                 return Column(
                   children: [
-                    ScheduleCard(),
+                    ScheduleCard(active: _active, doctorBooking: doctorBooking,),
                     SizedBox(height: 10.0,),
                   ],
                 );
               },
+            ):doctorBookingList.isNotEmpty?SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.zero,
+                height: MediaQuery.of(context).size.height,
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: doctorBookingList.length,
+                  itemBuilder: (_, int index){
+                    DoctorBooking doctorBooking = doctorBookingList[index];
+                    return Column(
+                      children: [
+                        ScheduleCard(active: _active, doctorBooking: doctorBooking,),
+                        SizedBox(height: 10.0,),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ):SliverToBoxAdapter(
+              child: Text(doctorBookingList.length.toString()),
             ),
           ),
         ],
       ),
     );
   }
+
+  Future<void> updateCompletedBookings(List<DoctorBooking> doctorBookingList) async {
+    if(doctorBookingList.isNotEmpty){
+      for(var i = 0; i < doctorBookingList.length; i++){
+        DoctorBooking doctorBooking = doctorBookingList[i];
+        if(int.parse(doctorBooking.booking!.scheduledate!) < int.parse(DateTime.now().millisecondsSinceEpoch.toString())){
+          String response = await AssistantMethods.saveScheduleDetails(context, doctorBooking.booking!.id!.toString(), await getUserId(),
+          doctorBooking.doctor!.user!.id!.toString(), doctorBooking.booking!.scheduledate!, doctorBooking.booking!.schedule_start_time!,
+          doctorBooking.booking!.schedule_end_time!, "completed", doctorBooking.booking!.notes!);
+          if(response == "SUCCESS"){
+            await AssistantMethods.getUserBookings(context, await getUserId());
+          }
+        }
+      }
+    }
+  }
+
 }
 
 class ScheduleCard extends StatefulWidget {
-  const ScheduleCard({Key? key}) : super(key: key);
+  final int active;
+  final DoctorBooking doctorBooking;
+  const ScheduleCard({
+    Key? key,
+    required this.active,
+    required this.doctorBooking
+  }) : super(key: key);
 
   @override
   State<ScheduleCard> createState() => _ScheduleCardState();
@@ -230,7 +284,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
-              "Dr. Phil Molly",
+              '${widget.doctorBooking.doctor!.work!.title!}. ${widget.doctorBooking.doctor!.user!.fullname!}',
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
@@ -238,7 +292,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
               ),
             ),
             subtitle: Text(
-              "Physician",
+              widget.doctorBooking.doctor!.work!.field!,
               style: TextStyle(
                 color: Palette.textLight,
                 fontSize: 16.0,
@@ -278,7 +332,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
                   ),
                   SizedBox(width: 3.0,),
                   Text(
-                    "12/03/2021",
+                    convertToFullDate(int.parse(widget.doctorBooking.booking!.scheduledate!)),
                     style: TextStyle(
                       color: Palette.textColor,
                       fontSize: 16.0,
@@ -295,7 +349,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
                   ),
                   SizedBox(width: 3.0,),
                   Text(
-                    "10.30 AM",
+                    widget.doctorBooking.booking!.schedule_start_time!,
                     style: TextStyle(
                       color: Palette.textColor,
                       fontSize: 16.0,
@@ -308,11 +362,14 @@ class _ScheduleCardState extends State<ScheduleCard> {
                   Icon(
                     Icons.circle,
                     size: 18.0,
-                    color: Palette.primaryColor,
+                    color: widget.doctorBooking.booking!.status == "booked"?
+                    Palette.orange1:widget.doctorBooking.booking!.status == "confirmed"?
+                    Palette.mainColor:widget.doctorBooking.booking!.status == "cancelled"?
+                    Colors.red:Palette.primaryColor,
                   ),
                   SizedBox(width: 3.0,),
                   Text(
-                    "Confirmed",
+                    toBeginningOfSentenceCase(widget.doctorBooking.booking!.status!)!,
                     style: TextStyle(
                       color: Palette.textColor,
                       fontSize: 16.0,
@@ -326,19 +383,32 @@ class _ScheduleCardState extends State<ScheduleCard> {
           Row(
             children: [
               Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 15.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.grey[300]!.withOpacity(0.75),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Cancel",
-                      style: TextStyle(
-                        color: Palette.textColor,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold
+                child: widget.active == 2 || widget.active == 3?SizedBox.shrink():InkWell(
+                  onTap: () async{
+                    String response = await AssistantMethods.saveScheduleDetails(context, widget.doctorBooking.booking!.id!.toString(), await getUserId(),
+                        widget.doctorBooking.doctor!.user!.id!.toString(), widget.doctorBooking.booking!.scheduledate!, widget.doctorBooking.booking!.schedule_start_time!,
+                        widget.doctorBooking.booking!.schedule_end_time!, "cancelled", widget.doctorBooking.booking!.notes!);
+                    if(response == "SUCCESS"){
+                      await AssistantMethods.getUserBookings(context, await getUserId());
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(response),
+                    ));
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.grey[300]!.withOpacity(0.75),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(
+                          color: Palette.textColor,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold
+                        ),
                       ),
                     ),
                   ),
@@ -350,7 +420,10 @@ class _ScheduleCardState extends State<ScheduleCard> {
                   padding: EdgeInsets.symmetric(vertical: 15.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
-                    color: Palette.mainColor,
+                    color: widget.doctorBooking.booking!.status == "booked"?
+                    Palette.orange1:widget.doctorBooking.booking!.status == "confirmed"?
+                    Palette.mainColor:widget.doctorBooking.booking!.status == "cancelled"?
+                    Colors.red:Palette.primaryColor,
                   ),
                   child: Center(
                     child: Text(

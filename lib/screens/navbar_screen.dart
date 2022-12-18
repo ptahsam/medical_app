@@ -69,12 +69,20 @@ class _NavBarScreenState extends State<NavBarScreen> {
     getUserData();
     getWorkData();
     getDoctors();
+    getUserBookings();
   }
 
   getUserData() async{
     Future.delayed(Duration.zero,()
     async {
       AssistantMethods.getUserData(context, await getUserId());
+    });
+  }
+
+  getUserBookings() async{
+    Future.delayed(Duration.zero,()
+    async {
+      AssistantMethods.getUserBookings(context, await getUserId());
     });
   }
 

@@ -263,7 +263,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             builder: (context) => //buildSelectSheet(),
                           );*/
                         },
-                        child: Container(
+                        child: isEdit?Container(
                           padding: EdgeInsets.all(6.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
@@ -280,7 +280,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             Icons.add_a_photo_outlined,
                             color: Colors.white,
                           ),
-                        ),
+                        ):SizedBox.shrink(),
                       ),
                     ),
                   ],

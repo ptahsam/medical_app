@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/Models/doctor.dart';
+import 'package:medical_app/Models/doctor_rating.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
+import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:medical_app/sharedWidgets/book_appointment.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 class DoctorDetails extends StatefulWidget {
   final Doctor doctor;
@@ -17,8 +23,21 @@ class DoctorDetails extends StatefulWidget {
 }
 
 class _DoctorDetailsState extends State<DoctorDetails> {
+  TextEditingController commentEditingController = TextEditingController();
+
+  bool ratingChanged = false;
+  double userRating = 3.0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    AssistantMethods.getDoctorRatings(context, widget.doctor.user!.id!.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<DoctorRating> doctorRatingList = Provider.of<AppData>(context).doctorRatingList!=null?Provider.of<AppData>(context).doctorRatingList!:[];
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -150,7 +169,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                     ),
                   ),
                   SizedBox(height: 10.0,),
-                  Row(
+                  doctorRatingList.isNotEmpty?Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
@@ -170,13 +189,13 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                           ),
                           SizedBox(width: 3.0,),
                           Text(
-                            "5.0",
+                            "${getAverageDoctorRatings(doctorRatingList)}",
                             style: TextStyle(
                               color: Palette.greyText,
                             ),
                           ),
                           Text(
-                            "(122)",
+                            "(${doctorRatingList.length})",
                             style: TextStyle(
                               color: Palette.textLight,
                             ),
@@ -191,16 +210,17 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                         ),
                       ),
                     ],
-                  ),
+                  ):SizedBox.shrink(),
                   SizedBox(height: 10.0,),
                   Container(
                     padding: EdgeInsets.only(bottom: 20.0),
                     height: 200.0,
                     width: MediaQuery.of(context).size.width,
-                    child: AnimatedList(
-                      initialItemCount: 10,
+                    child: doctorRatingList.isNotEmpty?AnimatedList(
+                      initialItemCount: doctorRatingList.length,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (ctx, int index, animation){
+                        DoctorRating doctorRating = doctorRatingList[index];
                         return Container(
                           width: MediaQuery.of(context).size.width * 0.80,
                           margin: EdgeInsets.only(right: 10.0),
@@ -227,14 +247,14 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                                   ),
                                 ),
                                 title: Text(
-                                  "Peter Samuel",
+                                  "${doctorRating.user!.fullname!}",
                                   style: TextStyle(
                                     fontSize: 18.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  "1 day ago",
+                                  "${convertToRatingtime(int.parse(doctorRating.rating!.date_added!))}",
                                   style: TextStyle(
                                     color: Palette.textLight,
                                   ),
@@ -256,7 +276,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                                       ),
                                       SizedBox(width: 3.0,),
                                       Text(
-                                        "5.0",
+                                        "${doctorRating.rating!.rating!}",
                                         style: TextStyle(
                                           color: Palette.greyText,
                                         ),
@@ -267,7 +287,9 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                               ),
                               SizedBox(height: 10.0,),
                               Text(
-                                "Many thanks to Doctor Phil Molly. He is a professional, competent doctor",
+                                "${doctorRating.rating!.comment!}",
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.normal,
@@ -278,6 +300,10 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                           ),
                         );
                       },
+                    ):Center(
+                      child: Text(
+                        "No ratings currently",
+                      ),
                     ),
                   ),
                   SizedBox(height: 10.0,),
@@ -318,6 +344,83 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                           fontSize: 16.0,
                           fontWeight: FontWeight.normal,
                           color: Palette.textLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.0,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Add Ratings",
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      ratingChanged?ElevatedButton(
+                        onPressed: () async {
+                          String response = await AssistantMethods.saveDoctorRating(context, widget.doctor.user!.id!.toString(), await getUserId(), userRating.toString(), commentEditingController.text);
+
+                          if(response == "SUCCESS"){
+                            setState(() {
+                              userRating = 3.0;
+                              ratingChanged = false;
+                              commentEditingController.text = "";
+                            });
+                          }
+                        },
+                        child: Text(
+                          "Save",
+                        ),
+                      ):SizedBox.shrink(),
+                    ],
+                  ),
+                  SizedBox(height: 5.0,),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: RatingBar.builder(
+                      initialRating: userRating,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemSize: 34,
+                      itemPadding: EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
+                      itemBuilder: (context, _) => Icon(
+                        Icons.star,
+                        color: Palette.mainColor,
+                        size: 18.0,
+                      ),
+                      onRatingUpdate: (rating) {
+                        setState(() {
+                          userRating = rating;
+                          ratingChanged = true;
+                        });
+                      },
+                    ),
+                    subtitle: TextField(
+                      controller: commentEditingController,
+                      minLines: 3,
+                      maxLines: 3,
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "Leave a comment",
+                        hintStyle: TextStyle(
+                          color: Palette.textColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18.0,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
                       ),
                     ),

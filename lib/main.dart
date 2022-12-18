@@ -33,6 +33,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> getUserData() async {
     userid = await getUserId();
+    setState(() {
+
+    });
   }
 
   @override

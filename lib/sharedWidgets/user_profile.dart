@@ -3,6 +3,8 @@ import 'package:flutter_emoji/flutter_emoji.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/DataHandler/appdata.dart';
 import 'package:medical_app/Models/user.dart';
+import 'package:medical_app/assistants/assistant_methods.dart';
+import 'package:medical_app/authentication/authentication.dart';
 import 'package:medical_app/config/config.dart';
 import 'package:medical_app/config/palette.dart';
 import 'package:medical_app/sharedWidgets/personal_details.dart';
@@ -373,13 +375,22 @@ class _UserProfileState extends State<UserProfile> {
           SliverPadding(
             padding: EdgeInsets.only(left: 12.0, right: 12.0, top: 10.0, bottom: 20.0),
             sliver: SliverToBoxAdapter(
-              child: Text(
-                "Log Out",
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  color: Palette.orange1,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
+              child: InkWell(
+                onTap: () async {
+                  saveUserId('');
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => StartScreen()));
+                },
+                child: Text(
+                  "Log Out",
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    color: Palette.orange1,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0,
+                  ),
                 ),
               ),
             ),
